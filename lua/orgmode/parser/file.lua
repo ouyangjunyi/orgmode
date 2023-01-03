@@ -332,6 +332,7 @@ function File:get_clock_report(from, to)
   local result = {
     total_duration = 0,
     headlines = {},
+    total_income = 0,
   }
   for _, section in ipairs(self.sections) do
     if section.logbook then
@@ -339,6 +340,11 @@ function File:get_clock_report(from, to)
       if minutes > 0 then
         table.insert(result.headlines, section)
         result.total_duration = result.total_duration + minutes
+        local income = section:get_property('income')
+        if income == nil then
+          income = '0'
+        end
+        result.total_income = result.total_income + tonumber(income)
       end
     end
   end

@@ -4,6 +4,7 @@ local Duration = require('orgmode.objects.duration')
 
 ---@class ClockReport
 ---@field total_duration Duration
+---@field total_income number
 ---@field from Date
 ---@field to Date
 ---@field table Table
@@ -16,6 +17,7 @@ function ClockReport:new(opts)
   data.from = opts.from
   data.to = opts.to
   data.total_duration = opts.total_duration
+  data.total_income = opts.total_income
   data.files = opts.files or {}
   data.table = opts.table
   setmetatable(data, self)
@@ -27,19 +29,32 @@ end
 ---@return table[]
 function ClockReport:draw_for_agenda(start_line)
   local data = {
-    { 'File', 'Headline', 'Time' },
+    { 'File', 'Headline', 'Time', 'Income' },
     'hr',
-    { '', 'ALL Total time', self.total_duration:to_string() },
+    { '', 'ALL Total time', self.total_duration:to_string(), tostring(self.total_income) },
     'hr',
   }
 
   for _, file in ipairs(self.files) do
-    table.insert(data, { { value = file.name, reference = file }, 'File time', file.total_duration:to_string() })
+    table.insert(
+      data,
+      {
+        { value = file.name, reference = file },
+        'File time',
+        file.total_duration:to_string(),
+        tostring(file.total_income),
+      }
+    )
     for _, headline in ipairs(file.headlines) do
+      local income = headline:get_property('income')
+      if income == nil then
+        income = '0'
+      end
       table.insert(data, {
         '',
         { value = headline.title, reference = headline },
         headline.logbook:get_total(self.from, self.to):to_string(),
+        income,
       })
     end
     table.insert(data, 'hr')
@@ -116,15 +131,18 @@ function ClockReport.from_date_range(from, to)
     to = to,
     total_duration = 0,
     files = {},
+    total_income = 0,
   }
   for _, orgfile in ipairs(Files.all()) do
     local file_clocks = orgfile:get_clock_report(from, to)
     if #file_clocks.headlines > 0 then
       report.total_duration = report.total_duration + file_clocks.total_duration.minutes
+      report.total_income = report.total_income + file_clocks.total_income
       table.insert(report.files, {
         name = orgfile.category .. '.org',
         total_duration = file_clocks.total_duration,
         headlines = file_clocks.headlines,
+        total_income = file_clocks.total_income,
       })
     end
   end
