@@ -306,7 +306,7 @@ function Section:get_property(name)
   return self.properties.items[name:lower()]
 end
 
-function Section:get_income()
+function Section:get_expect_income()
   local priority = tonumber(self.priority)
   if priority == nil then
     priority = 6
@@ -314,7 +314,18 @@ function Section:get_income()
   return 7 - priority
 end
 
+function Section:get_income()
+  local state = self.todo_keyword.type
+  if state ~= 'DONE' and state ~= 'ANSWER' then
+    return 0
+  end
+  return self:get_expect_income()
+end
+
 function Section:calc_roi(invest, income)
+  if invest == 0 then
+    return 0
+  end
   return income / invest
 end
 
@@ -332,7 +343,9 @@ function Section:calc_invest(from, to)
     minutes = self.logbook:get_total_minutes(from, to)
   end
   local time_level = 0
-  if minutes < 30 then
+  if minutes == 0 then
+    time_level = 0
+  elseif minutes < 30 then
     time_level = 1
   elseif minutes < 60 then
     time_level = 2
