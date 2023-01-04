@@ -306,6 +306,40 @@ function Section:get_property(name)
   return self.properties.items[name:lower()]
 end
 
+function Section:calc_roi(invest, income)
+  return income / invest * 100
+end
+
+function Section:calc_invest(from, to)
+  local emotion = self.properties.items['emotion']
+  if emotion == nil then
+    emotion = '1'
+  end
+  emotion = tonumber(emotion)
+  if emotion == nil then
+    emotion = 1
+  end
+  local minutes = 0
+  if self.logbook then
+    minutes = self.logbook:get_total_minutes(from, to)
+  end
+  local time_level = 0
+  if minutes < 30 then
+    time_level = 1
+  elseif minutes < 60 then
+    time_level = 2
+  elseif minutes < 90 then
+    time_level = 3
+  elseif minutes < 120 then
+    time_level = 4
+  elseif minutes < 150 then
+    time_level = 5
+  else
+    time_level = 6
+  end
+  return (emotion - 0.2) * time_level
+end
+
 function Section:matches_search_term(term)
   if self.title:lower():match(term) then
     return true

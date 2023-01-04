@@ -6,6 +6,8 @@ local Duration = require('orgmode.objects.duration')
 ---@field total_duration Duration
 ---@field total_income number
 ---@field total_emotion number
+---@field total_invest number
+---@field total_roi number
 ---@field from Date
 ---@field to Date
 ---@field table Table
@@ -20,6 +22,8 @@ function ClockReport:new(opts)
   data.total_duration = opts.total_duration
   data.total_income = opts.total_income
   data.total_emotion = opts.total_emotion
+  data.total_invest = opts.total_invest
+  data.total_roi = opts.total_roi
   data.files = opts.files or {}
   data.table = opts.table
   setmetatable(data, self)
@@ -30,16 +34,16 @@ end
 local function local_get_property(headline, name)
   local item = headline:get_property(name)
   if item == nil then
-    item = '0'
+    item = '1'
   end
-  return item
+  return tonumber(item)
 end
 
 ---@param start_line number
 ---@return table[]
 function ClockReport:draw_for_agenda(start_line)
   local data = {
-    { 'File', 'Headline', 'Time', 'Income', 'Emotion' },
+    { 'File', 'Headline', 'Time', 'Income', 'Emotion', 'Invest', 'Roi' },
     'hr',
     {
       '',
@@ -47,6 +51,8 @@ function ClockReport:draw_for_agenda(start_line)
       self.total_duration:to_string(),
       tostring(self.total_income),
       tostring(self.total_emotion),
+      tostring(self.total_invest),
+      string.format('%.1f', self.total_roi),
     },
     'hr',
   }
@@ -58,18 +64,21 @@ function ClockReport:draw_for_agenda(start_line)
       file.total_duration:to_string(),
       tostring(file.total_income),
       tostring(file.total_emotion),
+      tostring(file.total_invest),
+      string.format('%.1f', file.total_roi),
     })
     for _, headline in ipairs(file.headlines) do
-      local income = headline:get_property('income')
-      if income == nil then
-        income = '0'
-      end
+      local income = local_get_property(headline, 'income')
+      local emotion = local_get_property(headline, 'emotion')
+      local invest = headline:calc_invest(self.from, self.to)
       table.insert(data, {
         '',
         { value = headline.title, reference = headline },
         headline.logbook:get_total(self.from, self.to):to_string(),
-        local_get_property(headline, 'income'),
-        local_get_property(headline, 'emotion'),
+        tostring(income),
+        tostring(emotion),
+        tostring(invest),
+        string.format('%.1f', headline:calc_roi(invest, income)),
       })
     end
     table.insert(data, 'hr')
@@ -148,6 +157,8 @@ function ClockReport.from_date_range(from, to)
     files = {},
     total_income = 0,
     total_emotion = 0,
+    total_invest = 0,
+    total_roi = 0,
   }
   for _, orgfile in ipairs(Files.all()) do
     local file_clocks = orgfile:get_clock_report(from, to)
@@ -155,12 +166,16 @@ function ClockReport.from_date_range(from, to)
       report.total_duration = report.total_duration + file_clocks.total_duration.minutes
       report.total_income = report.total_income + file_clocks.total_income
       report.total_emotion = report.total_emotion + file_clocks.total_emotion
+      report.total_invest = report.total_invest + file_clocks.total_invest
+      report.total_roi = report.total_roi + file_clocks.total_roi
       table.insert(report.files, {
         name = orgfile.category .. '.org',
         total_duration = file_clocks.total_duration,
         headlines = file_clocks.headlines,
         total_income = file_clocks.total_income,
         total_emotion = file_clocks.total_emotion,
+        total_invest = file_clocks.total_invest,
+        total_roi = file_clocks.total_roi,
       })
     end
   end

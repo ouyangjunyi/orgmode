@@ -328,7 +328,7 @@ end
 local function local_get_property(section, name)
   local item = section:get_property(name)
   if item == nil then
-    item = '0'
+    item = '1'
   end
   return tonumber(item)
 end
@@ -342,6 +342,8 @@ function File:get_clock_report(from, to)
     headlines = {},
     total_income = 0,
     total_emotion = 0,
+    total_invest = 0,
+    total_roi = 0,
   }
   for _, section in ipairs(self.sections) do
     if section.logbook then
@@ -349,8 +351,12 @@ function File:get_clock_report(from, to)
       if minutes > 0 then
         table.insert(result.headlines, section)
         result.total_duration = result.total_duration + minutes
-        result.total_income = result.total_income + local_get_property(section, 'income')
+        local income = local_get_property(section, 'income')
+        local invest = section:calc_invest(from, to)
+        result.total_income = result.total_income + income
         result.total_emotion = result.total_emotion + local_get_property(section, 'emotion')
+        result.total_invest = result.total_invest + invest
+        result.total_roi = result.total_roi + section:calc_roi(invest, income)
       end
     end
   end
