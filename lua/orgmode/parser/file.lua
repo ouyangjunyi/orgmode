@@ -325,6 +325,14 @@ function File:get_closest_headline(id)
   return nil
 end
 
+local function local_get_property(section, name)
+  local item = section:get_property(name)
+  if item == nil then
+    item = '0'
+  end
+  return tonumber(item)
+end
+
 ---@param from Date
 ---@param to Date
 ---@return table
@@ -333,6 +341,7 @@ function File:get_clock_report(from, to)
     total_duration = 0,
     headlines = {},
     total_income = 0,
+    total_emotion = 0,
   }
   for _, section in ipairs(self.sections) do
     if section.logbook then
@@ -340,11 +349,8 @@ function File:get_clock_report(from, to)
       if minutes > 0 then
         table.insert(result.headlines, section)
         result.total_duration = result.total_duration + minutes
-        local income = section:get_property('income')
-        if income == nil then
-          income = '0'
-        end
-        result.total_income = result.total_income + tonumber(income)
+        result.total_income = result.total_income + local_get_property(section, 'income')
+        result.total_emotion = result.total_emotion + local_get_property(section, 'emotion')
       end
     end
   end
