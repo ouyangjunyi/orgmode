@@ -307,7 +307,7 @@ function Section:get_property(name)
 end
 
 function Section:calc_roi(invest, income)
-  return income / invest * 100
+  return income / invest
 end
 
 function Section:calc_invest(from, to)
@@ -337,7 +337,7 @@ function Section:calc_invest(from, to)
   else
     time_level = 6
   end
-  return (emotion - 0.2) * time_level
+  return (0.8 + emotion / 5) * time_level
 end
 
 function Section:matches_search_term(term)

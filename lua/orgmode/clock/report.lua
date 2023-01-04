@@ -43,15 +43,15 @@ end
 ---@return table[]
 function ClockReport:draw_for_agenda(start_line)
   local data = {
-    { 'File', 'Headline', 'Time', 'Income', 'Emotion', 'Invest', 'Roi' },
+    { 'File', 'Headline', 'Time', 'Emotion', 'Invest', 'Income', 'Roi' },
     'hr',
     {
       '',
       'ALL Total time',
       self.total_duration:to_string(),
-      tostring(self.total_income),
       tostring(self.total_emotion),
       tostring(self.total_invest),
+      tostring(self.total_income),
       string.format('%.1f', self.total_roi),
     },
     'hr',
@@ -62,9 +62,9 @@ function ClockReport:draw_for_agenda(start_line)
       { value = file.name, reference = file },
       'File time',
       file.total_duration:to_string(),
-      tostring(file.total_income),
       tostring(file.total_emotion),
       tostring(file.total_invest),
+      tostring(file.total_income),
       string.format('%.1f', file.total_roi),
     })
     for _, headline in ipairs(file.headlines) do
@@ -75,9 +75,9 @@ function ClockReport:draw_for_agenda(start_line)
         '',
         { value = headline.title, reference = headline },
         headline.logbook:get_total(self.from, self.to):to_string(),
-        tostring(income),
         tostring(emotion),
         tostring(invest),
+        tostring(income),
         string.format('%.1f', headline:calc_roi(invest, income)),
       })
     end
@@ -160,9 +160,11 @@ function ClockReport.from_date_range(from, to)
     total_invest = 0,
     total_roi = 0,
   }
+  local active_cnt = 0
   for _, orgfile in ipairs(Files.all()) do
     local file_clocks = orgfile:get_clock_report(from, to)
     if #file_clocks.headlines > 0 then
+      active_cnt = active_cnt + 1
       report.total_duration = report.total_duration + file_clocks.total_duration.minutes
       report.total_income = report.total_income + file_clocks.total_income
       report.total_emotion = report.total_emotion + file_clocks.total_emotion
@@ -172,13 +174,17 @@ function ClockReport.from_date_range(from, to)
         name = orgfile.category .. '.org',
         total_duration = file_clocks.total_duration,
         headlines = file_clocks.headlines,
-        total_income = file_clocks.total_income,
         total_emotion = file_clocks.total_emotion,
         total_invest = file_clocks.total_invest,
+        total_income = file_clocks.total_income,
         total_roi = file_clocks.total_roi,
       })
     end
   end
+  if active_cnt == 0 then
+    active_cnt = 1
+  end
+  report.total_roi = report.total_roi / active_cnt
   report.total_duration = Duration.from_minutes(report.total_duration)
   return ClockReport:new(report)
 end

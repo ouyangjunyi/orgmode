@@ -345,10 +345,12 @@ function File:get_clock_report(from, to)
     total_invest = 0,
     total_roi = 0,
   }
+  local active_cnt = 0
   for _, section in ipairs(self.sections) do
     if section.logbook then
       local minutes = section.logbook:get_total_minutes(from, to)
       if minutes > 0 then
+        active_cnt = active_cnt + 1
         table.insert(result.headlines, section)
         result.total_duration = result.total_duration + minutes
         local income = local_get_property(section, 'income')
@@ -360,7 +362,10 @@ function File:get_clock_report(from, to)
       end
     end
   end
-
+  if active_cnt == 0 then
+    active_cnt = 1
+  end
+  result.total_roi = result.total_roi / active_cnt
   result.total_duration = Duration.from_minutes(result.total_duration)
   return result
 end
