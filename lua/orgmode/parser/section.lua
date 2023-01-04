@@ -306,6 +306,14 @@ function Section:get_property(name)
   return self.properties.items[name:lower()]
 end
 
+function Section:get_income()
+  local priority = tonumber(self.priority)
+  if priority == nil then
+    priority = 6
+  end
+  return 7 - priority
+end
+
 function Section:calc_roi(invest, income)
   return income / invest
 end

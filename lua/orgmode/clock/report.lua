@@ -68,7 +68,7 @@ function ClockReport:draw_for_agenda(start_line)
       string.format('%.1f', file.total_roi),
     })
     for _, headline in ipairs(file.headlines) do
-      local income = local_get_property(headline, 'income')
+      local income = headline:get_income()
       local emotion = local_get_property(headline, 'emotion')
       local invest = headline:calc_invest(self.from, self.to)
       table.insert(data, {

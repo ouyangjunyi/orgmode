@@ -353,7 +353,7 @@ function File:get_clock_report(from, to)
         active_cnt = active_cnt + 1
         table.insert(result.headlines, section)
         result.total_duration = result.total_duration + minutes
-        local income = local_get_property(section, 'income')
+        local income = section:get_income()
         local invest = section:calc_invest(from, to)
         result.total_income = result.total_income + income
         result.total_emotion = result.total_emotion + local_get_property(section, 'emotion')
