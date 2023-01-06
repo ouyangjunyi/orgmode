@@ -358,7 +358,7 @@ function Section:calc_invest(from, to)
   else
     time_level = 6
   end
-  return (0.8 + emotion / 5) * time_level
+  return (0.6 + emotion / 5) * time_level
 end
 
 function Section:matches_search_term(term)
