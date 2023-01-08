@@ -55,6 +55,77 @@ function File:_parse()
   self:_parse_sections()
 end
 
+function File:roi_rules(section)
+  local message = ''
+  local severity_level = -1
+  local isKanoWorse = section.properties.items['kanoworse']
+  local isKanoBetter = section.properties.items['kanobetter']
+  local isEmotion = section.properties.items['emotion']
+  if section.priority == '1' then
+    if isKanoWorse == nil then
+      severity_level = 1
+      message = 'kanoworse needed'
+    end
+  elseif section.priority == '2' then
+    if isKanoWorse == nil and isKanoBetter == nil then
+      severity_level = 1
+      message = 'kanobetter kanoworse needed'
+    elseif isKanoWorse == nil then
+      severity_level = 1
+      message = 'kanoworse needed'
+    elseif isKanoBetter == nil then
+      severity_level = 1
+      message = 'kanobetter needed'
+    end
+  elseif section.priority == '3' then
+    if isKanoBetter == nil then
+      severity_level = 1
+      message = 'kanobetter needed'
+    end
+  end
+  if severity_level == -1 then
+    if section.priority == '1' or section.priority == '2' or section.priority == '3' then
+      if isEmotion == nil then
+        message = 'emotion needed'
+        severity_level = 0
+      end
+    end
+  end
+  if severity_level == -1 then
+    return nil
+  else
+    local severity
+    if severity_level == 1 then
+      severity = vim.diagnostic.severity.ERROR or 'Error'
+    elseif severity_level == 0 then
+      severity = vim.diagnostic.severity.WARN or 'Warn'
+    end
+    return {
+      lnum = section.line_number - 1,
+      end_lnum = section.line_number - 1,
+      col = 0,
+      end_col = 0,
+      severity = severity,
+      source = 'always',
+      message = string.format('Roi Properties: "%s" for Priority: "%s"', message, section.priority),
+    }
+  end
+end
+
+function File:diagnostics_roi_check()
+  local warn_rules = {}
+  for child in self.tree:root():iter_children() do
+    if child:type() == 'section' then
+      local section = Section.from_node(child, self)
+      local warn_rule = self:roi_rules(section)
+      if warn_rule ~= nil then
+        table.insert(warn_rules, warn_rule)
+      end
+    end
+  end
+  return warn_rules
+end
+
 function File:get_errors()
   if not self:has_errors() then
     return nil

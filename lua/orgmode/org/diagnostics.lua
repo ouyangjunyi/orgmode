@@ -15,8 +15,14 @@ local function get_errors()
   end
 
   local errors = file:get_errors()
+
   if not errors then
-    return {}
+    local roi_check = file:diagnostics_roi_check()
+    if #roi_check == 0 then
+      return {}
+    else
+      return roi_check
+    end
   end
 
   return vim.tbl_map(function(error)
