@@ -113,17 +113,26 @@ function File:roi_rules(section)
   end
 end
 
-function File:diagnostics_roi_check()
+function File:recursive_roi_check(root)
   local warn_rules = {}
-  for child in self.tree:root():iter_children() do
-    if child:type() == 'section' then
-      local section = Section.from_node(child, self)
-      local warn_rule = self:roi_rules(section)
-      if warn_rule ~= nil then
-        table.insert(warn_rules, warn_rule)
-      end
+  if root:type() == 'section' then
+    local section = Section.from_node(root, self)
+    local warn_rule = self:roi_rules(section)
+    if warn_rule ~= nil then
+      table.insert(warn_rules, warn_rule)
     end
   end
+  for child in root:iter_children() do
+    if child:type() == 'section' then
+      local list = self:recursive_roi_check(child)
+      utils.concat(warn_rules, list, true)
+    end
+  end
+  return warn_rules
+end
+
+function File:diagnostics_roi_check()
+  local warn_rules = self:recursive_roi_check(self.tree:root())
   return warn_rules
 end
 
