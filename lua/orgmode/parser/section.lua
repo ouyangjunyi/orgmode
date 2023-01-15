@@ -315,8 +315,8 @@ function Section:get_expect_income()
 end
 
 function Section:get_income()
-  local state = self.todo_keyword.type
-  if state ~= 'DONE' and state ~= 'ANSWER' then
+  local state = self.todo_keyword.value
+  if state:sub(1, 1) ~= 'O' then
     return 0
   end
   return self:get_expect_income()
