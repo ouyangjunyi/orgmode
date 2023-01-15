@@ -391,6 +391,7 @@ function OrgMappings:_todo_change_state(direction)
   end
 
   if not item:is_done() and not was_done then
+    headline:set_scheduled_date(Date.today())
     return dispatchEvent()
   end
 
@@ -431,6 +432,7 @@ function OrgMappings:_todo_change_state(direction)
     end
     if should_log_time and not item:is_done() and was_done then
       headline:remove_closed_date()
+      headline:set_scheduled_date(Date.today())
     end
     return dispatchEvent()
   end
