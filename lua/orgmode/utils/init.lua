@@ -373,7 +373,11 @@ function utils.prompt_autocomplete(arg_lead, list, split_chars)
 end
 
 ---@param items table
-function utils.choose(items)
+function utils.choose(items, is_case)
+  local isCase = false
+  if is_case == true then
+    isCase = true
+  end
   items = items or {}
 
   local output = {}
@@ -394,11 +398,18 @@ function utils.choose(items)
   vim.api.nvim_echo(output, true, {})
 
   local raw = vim.fn.nr2char(vim.fn.getchar())
-  local char = string.lower(raw)
+  local char = raw
+  if isCase == false then
+    char = string.lower(raw)
+  end
   vim.cmd('redraw!')
 
   for _, item in ipairs(items) do
-    if char == string.lower(item.choice_value) then
+    local checkChar = item.choice_value
+    if isCase == false then
+      checkChar = string.lower(checkChar)
+    end
+    if char == checkChar then
       return { choice_value = item.choice_value, choice_text = item.choice_text, raw = raw, ctx = item.ctx }
     end
   end

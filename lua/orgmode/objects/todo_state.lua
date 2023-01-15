@@ -45,7 +45,7 @@ function TodoState:open_fast_access()
     })
   end
 
-  local choice = utils.choose(enumerated)
+  local choice = utils.choose(enumerated, true)
   if not choice then
     return
   end
