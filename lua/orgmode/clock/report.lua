@@ -73,7 +73,7 @@ function ClockReport:draw_for_agenda(start_line)
       local invest = headline:calc_invest(self.from, self.to)
       table.insert(data, {
         '',
-        { value = headline.title, reference = headline },
+        { value = '[' .. headline.todo_keyword.value .. '] ' .. headline.title, reference = headline },
         headline.logbook:get_total(self.from, self.to):to_string(),
         tostring(emotion),
         tostring(invest),
