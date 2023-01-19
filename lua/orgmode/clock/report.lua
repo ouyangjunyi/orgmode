@@ -1,4 +1,5 @@
 local Files = require('orgmode.parser.files')
+local File = require('orgmode.parser.file')
 local Table = require('orgmode.parser.table')
 local Duration = require('orgmode.objects.duration')
 
@@ -39,9 +40,21 @@ local function local_get_property(headline, name)
   return tonumber(item)
 end
 
+vim.api.nvim_command('highlight ClockReport guibg=darkred')
+
+local function clearHighLight(groupname)
+  local str = [[
+       for m in filter(getmatches(), { i, v -> l:v.group is?']] .. groupname .. [[' })
+       call matchdelete(m.id)
+       endfor
+     ]]
+  vim.api.nvim_exec(str, true)
+end
+
 ---@param start_line number
 ---@return table[]
 function ClockReport:draw_for_agenda(start_line)
+  clearHighLight('ClockReport')
   local data = {
     { 'File', 'Headline', 'Time', 'Emotion', 'Invest', 'Income', 'Roi' },
     'hr',
@@ -67,18 +80,23 @@ function ClockReport:draw_for_agenda(start_line)
       tostring(file.total_income),
       string.format('%.1f', file.total_roi),
     })
-    for _, headline in ipairs(file.headlines) do
-      local income = headline:get_income()
-      local emotion = local_get_property(headline, 'emotion')
-      local invest = headline:calc_invest(self.from, self.to)
+    for _, section in ipairs(file.headlines) do
+      local income = section:get_income()
+      local emotion = local_get_property(section, 'emotion')
+      local invest = section:calc_invest(self.from, self.to)
+      if File:roi_rules(section) ~= nil then
+        local cut_str = section.title:gsub('%[', '\\['):gsub('%]', '\\]')
+        vim.api.nvim_command(string.format("call matchadd('ClockReport','%s')", cut_str))
+      end
+
       table.insert(data, {
         '',
-        { value = '[' .. headline.todo_keyword.value .. '] ' .. headline.title, reference = headline },
-        headline.logbook:get_total(self.from, self.to):to_string(),
+        { value = '[' .. section.todo_keyword.value .. '] ' .. section.title, reference = section },
+        section.logbook:get_total(self.from, self.to):to_string(),
         tostring(emotion),
         tostring(invest),
         tostring(income),
-        string.format('%.1f', headline:calc_roi(invest, income)),
+        string.format('%.1f', section:calc_roi(invest, income)),
       })
     end
     table.insert(data, 'hr')
