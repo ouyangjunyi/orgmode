@@ -94,6 +94,11 @@ function OrgMappings:toggle_archive_tag()
 end
 
 function OrgMappings:cycle()
+  vim.api.nvim_feedkeys("za", "n", false)
+end
+
+-- change to "za" due to origin org fold not work 
+function OrgMappings:cycle_origin_backup()
   local file = Files.get_current_file()
   local line = vim.fn.line('.')
   if not vim.wo.foldenable then
