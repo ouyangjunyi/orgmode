@@ -200,8 +200,24 @@ function Headline:set_priority(priority)
   tree_utils.set_node_text(stars, ('%s [#%s]'):format(text, priority))
 end
 
+function Headline:org_drill_init()
+  local now = Date.now()
+  self:set_property('drill_lasttime', now:to_string())
+  self:set_property('drill_ef', '0')
+  self:set_property('drill_n', '0')
+  self:set_property('drill_failures', '0')
+  self:set_property('drill_meanq', '0')
+  self:set_property('drill_total_repeats', '0')
+  self:set_scheduled_date(now)
+end
+
 ---@param keyword string
 function Headline:set_todo(keyword)
+  if keyword == 'SUPERMEMO' then
+    self:org_drill_init()
+  else
+    self:set_scheduled_date(Date.today())
+  end
   local current_todo = self:todo()
   if current_todo then
     tree_utils.set_node_text(current_todo, keyword)

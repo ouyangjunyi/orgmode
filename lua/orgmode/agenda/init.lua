@@ -9,6 +9,7 @@ local AgendaSearchView = require('orgmode.agenda.views.search')
 local AgendaTodosView = require('orgmode.agenda.views.todos')
 local AgendaTagsView = require('orgmode.agenda.views.tags')
 local AgendaView = require('orgmode.agenda.views.agenda')
+local SuperMemoView = require('orgmode.agenda.views.supermemo')
 
 ---@class Agenda
 ---@field content table[]
@@ -45,6 +46,10 @@ function Agenda:open_agenda_view(View, type, opts)
   self.views = { view }
   vim.b.org_agenda_type = type
   return self:_render()
+end
+
+function Agenda:super_memo(opts)
+  self:open_agenda_view(SuperMemoView.SuperMemoView, 'agenda', opts)
 end
 
 function Agenda:agenda(opts)
@@ -89,6 +94,13 @@ end
 function Agenda:prompt()
   self.filters:reset()
   return utils.menu('Press key for an agenda command', {
+    --{
+    --  label = 'SuperMemo',
+    --  key = 'x',
+    --  action = function()
+    --    return self:super_memo({ span = 'day' })
+    --  end,
+    --},
     {
       label = 'Agenda for current week or day',
       key = 'a',
