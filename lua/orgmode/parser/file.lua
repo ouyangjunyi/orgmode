@@ -61,34 +61,21 @@ function File:roi_rules(section)
   local isKanoWorse = section.properties.items['kanoworse']
   local isKanoBetter = section.properties.items['kanobetter']
   local isEmotion = section.properties.items['emotion']
-  local status = section.todo_keyword.value
-  if section.priority == '1' then
-    if isKanoWorse == nil then
-      severity_level = 1
-      message = 'kanoworse needed'
+  local status = section.todo_keyword.type
+  if section.priority == '1' or section.priority == '2' then
+    if isEmotion == nil and status == 'DONE' then
+      message = message .. ' emotion needed'
+      severity_level = 0
     end
-  elseif section.priority == '2' then
-    if isKanoWorse == nil and isKanoBetter == nil then
-      severity_level = 1
-      message = 'kanobetter kanoworse needed'
-    elseif isKanoWorse == nil then
-      severity_level = 1
-      message = 'kanoworse needed'
-    elseif isKanoBetter == nil then
-      severity_level = 1
-      message = 'kanobetter needed'
-    end
-  elseif section.priority == '3' then
-    if isKanoBetter == nil then
-      severity_level = 1
-      message = 'kanobetter needed'
-    end
-  end
-  if severity_level == -1 then
-    if section.priority == '1' or section.priority == '2' or section.priority == '3' then
-      if isEmotion == nil and (status == 'DONE' or status == 'ANSWER') then
-        message = 'emotion needed'
-        severity_level = 0
+    if section.priority == '1' then
+      if isKanoWorse == nil then
+        severity_level = 1
+        message = message .. ' kanoworse needed'
+      end
+    elseif section.priority == '2' then
+      if isKanoBetter == nil then
+        severity_level = 1
+        message = message .. ' kanobetter needed'
       end
     end
   end

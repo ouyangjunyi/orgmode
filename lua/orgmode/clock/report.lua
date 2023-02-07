@@ -63,8 +63,8 @@ function ClockReport:draw_for_agenda(start_line)
       'ALL Total time',
       self.total_duration:to_string(),
       tostring(self.total_emotion),
-      tostring(self.total_invest),
-      tostring(self.total_income),
+      string.format('%.1f', self.total_invest),
+      string.format('%.1f', self.total_income),
       string.format('%.1f', self.total_roi),
     },
     'hr',
@@ -76,8 +76,8 @@ function ClockReport:draw_for_agenda(start_line)
       'File time',
       file.total_duration:to_string(),
       tostring(file.total_emotion),
-      tostring(file.total_invest),
-      tostring(file.total_income),
+      string.format('%.1f', file.total_invest),
+      string.format('%.1f', file.total_income),
       string.format('%.1f', file.total_roi),
     })
     for _, section in ipairs(file.headlines) do
@@ -94,8 +94,8 @@ function ClockReport:draw_for_agenda(start_line)
         { value = '[' .. section.todo_keyword.value .. '] ' .. section.title, reference = section },
         section.logbook:get_total(self.from, self.to):to_string(),
         tostring(emotion),
-        tostring(invest),
-        tostring(income),
+        string.format('%.1f', invest),
+        string.format('%.1f', income),
         string.format('%.1f', section:calc_roi(invest, income)),
       })
     end

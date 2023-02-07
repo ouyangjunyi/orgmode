@@ -306,6 +306,11 @@ function Section:get_property(name)
   return self.properties.items[name:lower()]
 end
 
+-- 1: worse
+-- 2: good
+-- 3: less worse
+-- 4: less good
+-- 5: nothing
 function Section:get_expect_income()
   local priority = tonumber(self.priority)
   if priority == nil then
@@ -342,22 +347,7 @@ function Section:calc_invest(from, to)
   if self.logbook then
     minutes = self.logbook:get_total_minutes(from, to)
   end
-  local time_level = 0
-  if minutes == 0 then
-    time_level = 0
-  elseif minutes < 30 then
-    time_level = 1
-  elseif minutes < 60 then
-    time_level = 2
-  elseif minutes < 90 then
-    time_level = 3
-  elseif minutes < 120 then
-    time_level = 4
-  elseif minutes < 150 then
-    time_level = 5
-  else
-    time_level = 6
-  end
+  local time_level = math.min(20, (minutes + 29) / 30)
   return (0.6 + emotion / 5) * time_level
 end
 
