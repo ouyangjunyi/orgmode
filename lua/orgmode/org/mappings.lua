@@ -396,6 +396,7 @@ function OrgMappings:_todo_change_state(direction)
   end
 
   if not item:is_done() and not was_done then
+    headline:set_scheduled_date(Date.today())
     return dispatchEvent()
   end
 
@@ -912,7 +913,7 @@ end
 
 ---@param direction string
 ---@param use_fast_access? boolean
----@return boolean
+---@return string
 function OrgMappings:_change_todo_state(direction, use_fast_access)
   local headline = ts_org.closest_headline()
   local todo, current_keyword = headline:todo()
