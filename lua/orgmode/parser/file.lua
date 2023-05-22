@@ -330,20 +330,30 @@ end
 ---@return table
 function File:get_clock_report(from, to)
   local result = {
-    total_duration = 0,
+    --total_duration = 0,
+    total_work_time = 0,
     headlines = {},
   }
   for _, section in ipairs(self.sections) do
-    if section.logbook then
-      local minutes = section.logbook:get_total_minutes(from, to)
-      if minutes > 0 then
+    local close_time = section:get_closed_date()
+    if close_time and close_time:is_between(from, to) then
+      local work_time = tonumber(section:get_property('WORK_TIME'))
+      if work_time then
         table.insert(result.headlines, section)
-        result.total_duration = result.total_duration + minutes
+        result.total_work_time = result.total_work_time + work_time
       end
     end
+    --if section.logbook then
+    --  local minutes = section.logbook:get_total_minutes(from, to)
+    --  if minutes > 0 then
+    --    table.insert(result.headlines, section)
+    --    result.total_duration = result.total_duration + minutes
+    --  end
+    --end
   end
 
-  result.total_duration = Duration.from_minutes(result.total_duration)
+  --result.total_duration = Duration.from_minutes(result.total_duration)
+  --result.total_duration = 0
   return result
 end
 

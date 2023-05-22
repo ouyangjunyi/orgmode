@@ -533,7 +533,7 @@ end
 
 ---@param from Date
 ---@param to Date
----@param span string
+---@param span? string
 ---@return boolean
 function Date:is_between(from, to, span)
   local f = from

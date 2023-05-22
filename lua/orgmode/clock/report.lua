@@ -3,9 +3,10 @@ local Table = require('orgmode.parser.table')
 local Duration = require('orgmode.objects.duration')
 
 ---@class ClockReport
----@field total_duration Duration
+-----@field total_duration Duration
 ---@field from Date
 ---@field to Date
+---@field total_work_time number
 ---@field table Table
 ---@field files table[]
 local ClockReport = {}
@@ -15,7 +16,8 @@ function ClockReport:new(opts)
   local data = {}
   data.from = opts.from
   data.to = opts.to
-  data.total_duration = opts.total_duration
+ -- data.total_duration = opts.total_duration
+  data.total_work_time = opts.total_work_time
   data.files = opts.files or {}
   data.table = opts.table
   setmetatable(data, self)
@@ -29,17 +31,20 @@ function ClockReport:draw_for_agenda(start_line)
   local data = {
     { 'File', 'Headline', 'Time' },
     'hr',
-    { '', 'ALL Total time', self.total_duration:to_string() },
+    --{ '', 'Total Work time', self.total_duration:to_string() },
+    { '', 'Total Work time', tostring(self.total_work_time) },
     'hr',
   }
 
   for _, file in ipairs(self.files) do
-    table.insert(data, { { value = file.name, reference = file }, 'File time', file.total_duration:to_string() })
+    --table.insert(data, { { value = file.name, reference = file }, 'File time', file.total_duration:to_string() })
+    table.insert(data, { { value = file.name, reference = file }, 'File time', tostring(file.total_work_time) })
     for _, headline in ipairs(file.headlines) do
       table.insert(data, {
         '',
         { value = headline.title, reference = headline },
-        headline.logbook:get_total(self.from, self.to):to_string(),
+        headline:get_property('WORK_TIME')
+        --headline.logbook:get_total(self.from, self.to):to_string(),
       })
     end
     table.insert(data, 'hr')
@@ -114,21 +119,24 @@ function ClockReport.from_date_range(from, to)
   local report = {
     from = from,
     to = to,
-    total_duration = 0,
+    -- total_duration = 0,
+    total_work_time = 0,
     files = {},
   }
   for _, orgfile in ipairs(Files.all()) do
     local file_clocks = orgfile:get_clock_report(from, to)
     if #file_clocks.headlines > 0 then
-      report.total_duration = report.total_duration + file_clocks.total_duration.minutes
+      --report.total_duration = report.total_duration + file_clocks.total_duration.minutes
+      report.total_work_time = report.total_work_time + file_clocks.total_work_time
       table.insert(report.files, {
         name = orgfile.category .. '.org',
-        total_duration = file_clocks.total_duration,
+        --total_duration = file_clocks.total_duration,
+        total_work_time = file_clocks.total_work_time,
         headlines = file_clocks.headlines,
       })
     end
   end
-  report.total_duration = Duration.from_minutes(report.total_duration)
+  --report.total_duration = Duration.from_minutes(report.total_duration)
   return ClockReport:new(report)
 end
 
