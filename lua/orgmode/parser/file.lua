@@ -241,7 +241,7 @@ end
 function File:find_headlines_with_property_matching(property_name, term)
   return vim.tbl_filter(function(item)
     return item.properties.items[property_name:lower()]
-      and item.properties.items[property_name:lower()]:lower():match('^' .. vim.pesc(term:lower()))
+        and item.properties.items[property_name:lower()]:lower():match('^' .. vim.pesc(term:lower()))
   end, self.sections)
 end
 
@@ -303,7 +303,7 @@ function File:get_closest_headline(id)
   else
     local cursor_range = { id - 1, vim.fn.col('$') - 2 }
     node =
-      self.tree:root():named_descendant_for_range(cursor_range[1], cursor_range[2], cursor_range[1], cursor_range[2])
+    self.tree:root():named_descendant_for_range(cursor_range[1], cursor_range[2], cursor_range[1], cursor_range[2])
   end
 
   if not node then
@@ -325,6 +325,46 @@ function File:get_closest_headline(id)
   return nil
 end
 
+---@param section Section
+function File:check_work_time_rule(section)
+  if section:get_closed_date() and not section:get_property('WORK_TIME') then
+    local severity = vim.diagnostic.severity.WARN or 'Warn'
+    return {
+      lnum = section.line_number - 1,
+      end_lnum = section.line_number - 1,
+      col = 0,
+      end_col = 0,
+      severity = severity,
+      source = 'always',
+      message = string.format('WORK_TIME needed for closed item'),
+    }
+  else
+    return nil
+  end
+end
+
+function File:recursive_roi_check(root)
+  local warn_rules = {}
+  if root:type() == 'section' then
+    local section = Section.from_node(root, self)
+    local warn_rule = self:check_work_time_rule(section)
+    if warn_rule ~= nil then
+      table.insert(warn_rules, warn_rule)
+    end
+  end
+  for child in root:iter_children() do
+    if child:type() == 'section' then
+      local list = self:recursive_roi_check(child)
+      utils.concat(warn_rules, list, true)
+    end
+  end
+  return warn_rules
+end
+
+function File:diagnostics_work_time_check()
+  return self:recursive_roi_check(self.tree:root())
+end
+
 ---@param from Date
 ---@param to Date
 ---@return table
@@ -338,8 +378,8 @@ function File:get_clock_report(from, to)
     local close_time = section:get_closed_date()
     if close_time and close_time:is_between(from, to) then
       local work_time = tonumber(section:get_property('WORK_TIME'))
+      table.insert(result.headlines, section)
       if work_time then
-        table.insert(result.headlines, section)
         result.total_work_time = result.total_work_time + work_time
       end
     end
@@ -407,15 +447,14 @@ end
 ---@private
 function File:_parse_source_code_filetypes()
   local blocks =
-    self:get_ts_matches('(block name: (expr) @name parameter: (expr) @parameters (#match? @name "(src|SRC)"))')
+  self:get_ts_matches('(block name: (expr) @name parameter: (expr) @parameters (#match? @name "(src|SRC)"))')
   local source_code_filetypes = {}
   for _, item in ipairs(blocks) do
     local ft = item.parameters and item.parameters.text
-    if
-      ft
-      and ft ~= ''
-      and not vim.tbl_contains(source_code_filetypes, ft)
-      and vim.api.nvim_get_runtime_file('syntax/' .. ft:lower() .. '.vim', true)
+    if ft
+        and ft ~= ''
+        and not vim.tbl_contains(source_code_filetypes, ft)
+        and vim.api.nvim_get_runtime_file('syntax/' .. ft:lower() .. '.vim', true)
     then
       table.insert(source_code_filetypes, ft)
     end

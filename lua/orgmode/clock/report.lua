@@ -1,4 +1,5 @@
 local Files = require('orgmode.parser.files')
+local File = require('orgmode.parser.file')
 local Table = require('orgmode.parser.table')
 local Duration = require('orgmode.objects.duration')
 
@@ -16,7 +17,7 @@ function ClockReport:new(opts)
   local data = {}
   data.from = opts.from
   data.to = opts.to
- -- data.total_duration = opts.total_duration
+  -- data.total_duration = opts.total_duration
   data.total_work_time = opts.total_work_time
   data.files = opts.files or {}
   data.table = opts.table
@@ -25,9 +26,21 @@ function ClockReport:new(opts)
   return data
 end
 
+vim.api.nvim_command('highlight ClockReport guibg=darkred')
+
+local function clearHighLight(groupname)
+  local str = [[
+       for m in filter(getmatches(), { i, v -> l:v.group is?']] .. groupname .. [[' })
+       call matchdelete(m.id)
+       endfor
+     ]]
+  vim.api.nvim_exec(str, true)
+end
+
 ---@param start_line number
 ---@return table[]
 function ClockReport:draw_for_agenda(start_line)
+  clearHighLight('ClockReport')
   local data = {
     { 'File', 'Headline', 'Time' },
     'hr',
@@ -40,10 +53,16 @@ function ClockReport:draw_for_agenda(start_line)
     --table.insert(data, { { value = file.name, reference = file }, 'File time', file.total_duration:to_string() })
     table.insert(data, { { value = file.name, reference = file }, 'File time', tostring(file.total_work_time) })
     for _, headline in ipairs(file.headlines) do
+      if File:check_work_time_rule(headline) ~= nil then
+        local cut_str = headline.title:gsub('%[', '\\['):gsub('%]', '\\]')
+        vim.api.nvim_command(string.format("call matchadd('ClockReport','%s')", cut_str))
+      end
+      local work_time = headline:get_property('WORK_TIME')
+      work_time = work_time or '0'
       table.insert(data, {
         '',
         { value = headline.title, reference = headline },
-        headline:get_property('WORK_TIME')
+        work_time,
         --headline.logbook:get_total(self.from, self.to):to_string(),
       })
     end
