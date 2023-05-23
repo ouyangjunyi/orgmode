@@ -55,6 +55,7 @@ function M.define_agenda_colors()
     deadline = 'OrgAgendaDeadline',
     ok = 'OrgAgendaScheduled',
     warning = 'OrgAgendaScheduledPast',
+    close = 'OrgClose',
   }
   for type, hlname in pairs(c) do
     vim.cmd(
@@ -222,6 +223,7 @@ function M.get_agenda_hl_map()
     deadline = 'OrgAgendaDeadline',
     ok = 'OrgAgendaScheduled',
     warning = 'OrgAgendaScheduledPast',
+    close = 'OrgClose',
   }, faces)
 end
 

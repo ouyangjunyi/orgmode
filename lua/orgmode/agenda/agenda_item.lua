@@ -104,7 +104,7 @@ function AgendaItem:_is_valid_for_today()
       return not self.headline:is_done()
     end
     return not self.headline:is_done()
-      and self.date:is_between(self.headline_date:get_adjusted_date(), self.headline_date, 'day')
+        and self.date:is_between(self.headline_date:get_adjusted_date(), self.headline_date, 'day')
   end
 
   if self.headline:is_done() and config.org_agenda_skip_scheduled_if_done then
@@ -150,6 +150,9 @@ function AgendaItem:_is_valid_for_date()
 end
 
 function AgendaItem:_generate_label()
+  if self.headline:get_closed_date() then
+    return 'Closed: '
+  end
   local time = not self.headline_date.date_only and add_padding(self.headline_date:format_time()) or ''
   if self.headline_date:is_deadline() then
     if self.is_same_day then
@@ -188,6 +191,9 @@ function AgendaItem:_generate_label()
 end
 
 function AgendaItem:_generate_highlight()
+  if self.headline:is_done() then
+    return { hlgroup = hl_map.close }
+  end
   if self.headline_date:is_deadline() then
     if self.headline:is_done() then
       return { hlgroup = hl_map.ok }

@@ -67,6 +67,10 @@ M.get_todo_keywords_colors = function()
       gui = M.from_hex(warning):lighten_by(0.1):to_rgb(),
       cterm = 11,
     },
+    close = {
+      gui = M.from_hex('#FFFFFF'):lighten_by(0.1):to_rgb(),
+      cterm = 10,
+    },
   }
 end
 
