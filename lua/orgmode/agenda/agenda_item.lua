@@ -86,7 +86,10 @@ function AgendaItem:_generate_data()
 end
 
 function AgendaItem:_is_valid_for_today()
-  if not self.headline_date.active or self.headline_date:is_closed() or self.headline_date:is_obsolete_range_end() then
+  if not self.headline_date:is_closed() and (not self.headline_date.active or self.headline_date:is_obsolete_range_end()
+      )
+  then
+    print(self.headline.title)
     return false
   end
   if self.headline_date:is_none() then
@@ -129,7 +132,10 @@ function AgendaItem:_is_valid_for_today()
 end
 
 function AgendaItem:_is_valid_for_date()
-  if not self.headline_date.active or self.headline_date:is_closed() or self.headline_date:is_obsolete_range_end() then
+  if not self.headline_date:is_closed()
+      and (not self.headline_date.active or self.headline_date:is_obsolete_range_end())
+  then
+    print(self.headline.title)
     return false
   end
 

@@ -242,7 +242,12 @@ end
 function Section:get_valid_dates_for_agenda()
   local dates = {}
   for _, date in ipairs(self.dates) do
-    if date.active and not date:is_closed() and not date:is_obsolete_range_end() then
+    if date:is_closed() then
+      dates = {}
+      table.insert(dates, date)
+      return dates
+    end
+    if date.active and not date:is_obsolete_range_end() then
       table.insert(dates, date)
       if not date:is_none() and date.is_date_range_start then
         local new_date = date:clone({ type = 'NONE' })
